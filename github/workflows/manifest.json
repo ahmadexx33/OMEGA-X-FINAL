@@ -1,0 +1,9 @@
+{
+  "name": "OMEGA-X SOVEREIGN",
+  "short_name": "OMEGA-X",
+  "start_url": "index.html",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#000000",
+  "theme_color": "#000000"
+}
