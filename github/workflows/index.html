@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>OMEGA-X SOVEREIGN | ENGINEERED BY AHMAD JAMAE</title>
+
+<!-- ENGINE CORE UPLINK (Global CDNs) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r169/three.min.js"></script>
+<script src="https://unpkg.com/lightweight-charts@5.0.4/dist/lightweight-charts.standalone.production.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.0.4/Tone.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+
+<style>
+    :root {
+        --cyan: #00f2ff; --red: #ff003c; --green: #00ff88; --gold: #ffaa00;
+        --bg: #000000; --panel-bg: rgba(0, 0, 0, 0.9);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); color: white; font-family: 'JetBrains Mono', monospace; user-select: none; }
+    
+    /* HUD MAIN ARCHITECTURE */
+    #app { display: grid; grid-template-rows: 65px 1fr 115px; height: 100vh; width: 100vw; padding: 6px; gap: 6px; position: relative; }
+    .panel { border: 1px solid rgba(0, 242, 255, 0.15); background: var(--panel-bg); backdrop-filter: blur(30px); position: relative; padding: 12px; }
+    .panel::before { content: ''; position: absolute; top: -1px; left: -1px; width: 15px; height: 15px; border-top: 2px solid var(--cyan); border-left: 2px solid var(--cyan); }
+    .panel::after { content: ''; position: absolute; bottom: -1px; right: -1px; width: 15px; height: 15px; border-bottom: 2px solid var(--cyan); border-right: 2px solid var(--cyan); }
+
+    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--cyan); }
+    .tabular { font-variant-numeric: tabular-nums; font-weight: 900; color: var(--cyan); text-shadow: 0 0 20px var(--cyan); font-size: 1.3rem; }
+
+    /* 33-AI HIVE MIND MATRIX */
+    .matrix-container { display: grid; grid-template-columns: repeat(11, 1fr); gap: 2px; margin-top: 5px; }
+    .ai-node { height: 38px; border: 1px solid rgba(0, 242, 255, 0.08); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 6px; transition: all 0.3s ease; }
+    .ai-node.active { background: rgba(0, 242, 255, 0.15); border-color: var(--cyan); box-shadow: inset 0 0 10px var(--cyan); }
+    .ai-node.god { background: rgba(255, 0, 60, 0.25); border-color: var(--red); color: white; animation: pulse 0.5s infinite; }
+
+    #main-content { display: grid; grid-template-columns: 1fr 320px; gap: 6px; flex: 1; min-height: 0; }
+    #chart-wrap { position: relative; flex: 1; border: 1px solid rgba(0, 242, 255, 0.1); }
+    #core-view { position: absolute; top: 10px; right: 10px; width: 250px; height: 250px; pointer-events: none; z-index: 150; filter: drop-shadow(0 0 40px var(--cyan)); }
+
+    .side-panel { display: flex; flex-direction: column; gap: 6px; width: 320px; }
+    .telemetry-log { flex: 1; font-size: 8px; color: var(--cyan); opacity: 0.8; overflow: hidden; line-height: 1.6; }
+    .firewall-box { border-color: var(--gold); color: var(--gold); font-size: 10px; font-weight: bold; }
+
+    .footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(0, 242, 255, 0.4); background: rgba(0, 0, 0, 0.98); padding: 10px 20px; }
+    .engineer-tag { color: var(--green); font-weight: 900; letter-spacing: 4px; text-shadow: 0 0 10px var(--green); }
+    .btn-mic { width: 65px; height: 65px; border-radius: 50%; border: 3px solid var(--cyan); display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; box-shadow: 0 0 20px var(--cyan); transition: 0.4s; }
+    .btn-mic.active { background: var(--red); border-color: white; box-shadow: 0 0 40px var(--red); transform: scale(1.1); }
+
+    /* AUTHENTICATION PORTAL */
+    #portal { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: 1.5s; }
+    .p-input { background: none; border: 1px solid var(--cyan); color: var(--cyan); padding: 20px; margin: 12px; width: 320px; text-align: center; font-family: inherit; font-size: 1.1rem; letter-spacing: 8px; }
+    .p-btn { background: var(--cyan); color: #000; border: none; padding: 20px 80px; font-weight: 900; letter-spacing: 10px; cursor: pointer; box-shadow: 0 0 50px var(--cyan); }
+    
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    .crt-overlay { position: fixed; inset: 0; z-index: 2000; pointer-events: none; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05)); background-size: 100% 3px, 3px 100%; }
+</style>
+</head>
+<body class="crt-overlay">
+
+<div id="portal">
+    <div style="font-size: 40px; font-weight: 900; letter-spacing: 25px; color: var(--cyan); margin-bottom: 50px">OMEGA-X</div>
+    <div style="margin-bottom: 25px; color: var(--cyan); letter-spacing: 6px; font-size: 10px; opacity: 0.5">UPLINK AUTHORIZATION REQUIRED</div>
+    <input type="text" id="p-user" class="p-input" placeholder="COMMANDER_ID" spellcheck="false">
+    <input type="password" id="p-pass" class="p-input" placeholder="PASSKEY">
+    <button class="p-btn" onclick="verify()">ACCESS SYSTEM</button>
+    <div id="p-err" style="color: var(--red); margin-top: 25px; font-size: 11px; font-weight: bold; letter-spacing: 2px"></div>
+</div>
+
+<div id="app">
+    <header class="header panel">
+        <div style="font-weight: 900; letter-spacing: 4px">SHIELD: <span id="shield-val" style="color:var(--green)">REINFORCED</span></div>
+        <div style="color: var(--cyan); font-weight: 900; letter-spacing: 8px">aj.omegax // DEITY_V100_NATIVE</div>
+        <div class="tabular" id="clock">00:00:00.00</div>
+    </header>
+
+    <div id="main-content">
+        <div id="chart-wrap" class="panel">
+            <div id="core-view"></div>
+            <div id="price-hud" style="position: absolute; top: 20px; left: 20px; z-index: 150; font-size: 18px; font-weight: 900; color: var(--cyan); text-shadow: 0 0 10px var(--cyan)">BTC/USDT: SYNCING...</div>
+            <div id="chart-container" style="width: 100%; height: 100%"></div>
+        </div>
+
+        <div class="side-panel">
+            <div class="panel" style="flex: 1">
+                <div style="font-size: 10px; margin-bottom: 12px; border-bottom: 1px solid var(--cyan); padding-bottom: 5px">NEURAL_HIVE_MIND [33 NODES]</div>
+                <div class="matrix-container" id="ai-matrix"></div>
+            </div>
+            <div class="panel firewall-box">
+                <div style="margin-bottom: 8px">QUANTUM FIREWALL: <span id="fw-status">SECURE</span></div>
+                <div style="font-size: 8px; opacity: 0.7; line-height: 1.4" id="fw-logs">
+                    PACKET_SCANNING: ACTIVE<br>AES_256_GCM: ARMED<br>LATTICE_ENCRYPTION: ON
+                </div>
+            </div>
+            <div class="panel telemetry-log" id="telemetry"></div>
+        </div>
+    </div>
+
+    <footer class="footer panel">
+        <div class="engineer-tag">ENGINEERED BY: AHMAD JAMAE</div>
+        <div class="btn-mic" id="mic" onclick="toggleMic()">🎤</div>
+        <div style="text-align: right">
+            <div style="color: var(--cyan); font-size: 12px; font-weight: bold">UPLINK: AHMADEXX33@PROTON.ME</div>
+            <div style="font-size: 8px; opacity: 0.5; letter-spacing: 2px">STABLE_CONNECTION // 0.002ms_LATENCY</div>
+        </div>
+    </footer>
+</div>
+
+<script>
+// ===== SOVEREIGN ENGINE V100 - Ahmad Jamae Exclusive =====
+const MASTER_USER = "OMEGA_ADMIN", MASTER_PASS = "62595941";
+const AI_MODELS = ["o3-Ultra", "GPT-o1", "Opus-Prime", "DeepSeek-V3", "Gemini-2.0", "Mistral-N", "Grok-3", "Qwen-2.5", "AlphaZero", "Stockfish", "Quantum-Leap", "MonteCarlo", "Bayesian", "GameTh-V9", "Chaos-Stab", "Fib-Qntm", "BlackRock", "Medallion", "Bridgewater", "Renaiss-A", "Citadel", "SMC-Oracle", "ICT-Engine", "Volume-Prof", "Perplexity", "Twitter-SX", "Reuters", "Glassnode", "WhaleAlert", "DarkPool", "SEC-Parse", "GeoRisk", "DEITY-X"];
+
+let tilt = {x:0, y:0}, baseline = null, isListening = false, isSpeaking = false;
+let chart, candleSeries, scene, camera, renderer, core;
+
+// ۱. هوش صوتی خلبانی (The Oracle)
+function speak(text) {
+    return new Promise(res => {
+        isSpeaking = true; window.speechSynthesis.cancel();
+        const m = new SpeechSynthesisUtterance(text);
+        const v = window.speechSynthesis.getVoices();
+        m.voice = v.find(x => x.lang === 'en-GB' && x.name.includes('Male')) || v[0];
+        m.pitch = 0.72; m.rate = 0.85;
+        m.onend = () => { isSpeaking = false; res(); };
+        window.speechSynthesis.speak(m);
+    });
+}
+
+// ۲. تایید هویت امنیتی
+function verify() {
+    const u = document.getElementById('p-user').value;
+    const p = document.getElementById('p-pass').value;
+    if(u === MASTER_USER && p === MASTER_PASS) {
+        document.getElementById('portal').style.opacity = '0';
+        setTimeout(() => { document.getElementById('portal').style.display = 'none'; ignite(); }, 1500);
+        speak("Authorization confirmed. Sovereign Link established. Welcome back, Commander Ahmad Jamae.");
+    } else {
+        document.getElementById('p-err').innerText = "INVALID_CREDENTIALS // ACCESS_DENIED";
+        if(navigator.vibrate) navigator.vibrate([150, 50, 150]);
+    }
+}
+
+// ۳. بیداری اعصاب (WebSocket & 6DoF Sensors)
+function ignite() {
+    init3D(); initChart(); initAI(); connectBinance();
+    window.addEventListener('deviceorientation', e => {
+        if(baseline === null) baseline = e.beta;
+        tilt.x = (e.gamma || 0) / 25; tilt.y = (e.beta - (baseline || 90)) / 25;
+    });
+    setInterval(() => {
+        document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-GB') + "." + Math.floor(Math.random()*99);
+        updateAI();
+    }, 100);
+}
+
+// ۴. رآکتور سه‌بعدی سنگین (Three.js)
+function init3D() {
+    scene = new THREE.Scene(); camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+    renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+    renderer.setSize(250, 250); document.getElementById('core-view').appendChild(renderer.domElement);
+    const geo = new THREE.IcosahedronGeometry(1.2, 2);
+    const mat = new THREE.MeshBasicMaterial({color: 0x00f2ff, wireframe: true, transparent: true, opacity: 0.4});
+    core = new THREE.Mesh(geo, mat); scene.add(core);
+    camera.position.z = 3;
+    function anim() {
+        requestAnimationFrame(anim); core.rotation.y += 0.012; core.rotation.z += 0.006;
+        camera.position.x = THREE.MathUtils.lerp(camera.position.x, tilt.x * 2.2, 0.1);
+        camera.position.y = THREE.MathUtils.lerp(camera.position.y, -tilt.y * 2.2, 0.1);
+        camera.lookAt(0,0,0); renderer.render(scene, camera);
+    }
+    anim();
+}
+
+// ۵. تپش قلب بایننس (Binance API WebSocket)
+function connectBinance() {
+    const ws = new WebSocket("wss://stream.binance.com:9443/ws/btcusdt@kline_1m");
+    ws.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        const k = data.k; const p = parseFloat(k.c);
+        document.getElementById('price-hud').innerText = `BTC/USDT: $${p.toLocaleString()}`;
+        candleSeries.update({time: k.t/1000, open: parseFloat(k.o), high: parseFloat(k.h), low: parseFloat(k.l), close: p});
+        if(Math.random() > 0.85) addTel(`PACKET_RECV :: 0x${Math.random().toString(16).slice(2,8).toUpperCase()} // VERIFIED`);
+    };
+}
+
+function initChart() {
+    chart = LightweightCharts.createChart(document.getElementById('chart-container'), {
+        layout: {background:{color:'transparent'}, textColor:'#d1d4dc', fontSize:11},
+        grid: {vertLines:{visible:false}, horzLines:{color:'#111'}},
+        timeScale: {borderColor:'#333', timeVisible:true}
+    });
+    candleSeries = chart.addCandlestickSeries({upColor:'#00f2ff', downColor:'#ff003c', borderVisible:false, wickUpColor:'#00f2ff', wickDownColor:'#ff003c'});
+}
+
+// ۶. ماتریس ۳۳ گره‌ای هوش مصنوعی (The Swarm)
+function initAI() {
+    const grid = document.getElementById('ai-matrix');
+    AI_MODELS.forEach((m, i) => {
+        const d = document.createElement('div');
+        d.className = 'ai-node'; d.id = 'ai-' + i;
+        d.innerHTML = `<span style="opacity:0.4">${m.slice(0,5)}</span><span class="v" style="color:var(--cyan)">SCAN</span>`;
+        grid.appendChild(d);
+    });
+}
+function updateAI() {
+    let c = 0;
+    AI_MODELS.forEach((m, i) => {
+        const el = document.getElementById('ai-' + i);
+        const active = Math.random() > 0.8;
+        el.className = active ? 'ai-node active' : 'ai-node';
+        if(active) { c++; const sig = Math.random() > 0.5 ? 'BUY' : 'SELL';
+            el.querySelector('.v').innerText = sig;
+            el.querySelector('.v').style.color = sig === 'BUY' ? GREEN : RED;
+        } else { el.querySelector('.v').innerText = 'SCAN'; el.querySelector('.v').style.color = 'var(--cyan)'; }
+    });
+    const shield = document.getElementById('shield-val');
+    if(c >= 30) {
+        shield.innerText = "GOD-MODE"; shield.style.color = GOLD;
+        if(navigator.vibrate) navigator.vibrate(40);
+    } else {
+        shield.innerText = "REINFORCED"; shield.style.color = GREEN;
+    }
+}
+
+function addTel(m) {
+    const el = document.getElementById('telemetry');
+    el.innerHTML = `> ${m}<br>${el.innerHTML.substring(0, 400)}`;
+}
+
+function toggleMic() {
+    isListening = !isListening;
+    document.getElementById('mic').classList.toggle('active');
+    if(isListening) speak("System listening. Connected to the 33-node neural matrix.");
+}
+window.speechSynthesis.onvoiceschanged = () => {};
+</script>
+</body>
+</html>
